@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Snaphoria - Photobooth</title>
+  <link rel="stylesheet" href="tes.css" />
+  <script>
+    const jumlahFotoMap = {
+      'mark.png': 3,
+      'haechann.png': 3,
+      'karina.png': 3,
+      'windah.png': 3,
+      'Ritsuki.png': 1,
+    };
+
+    function pilihFrame(namaFile) {
+      localStorage.setItem('selectedFrame', namaFile);
+      localStorage.setItem('jumlahFoto', jumlahFotoMap[namaFile] || 3);
+      window.location.href = 'take_photo.html';
+    }
+  </script>
+</head>
+<body>
+  <div class="container">
+    <h1>Pilih Frame untuk Photobooth</h1>
+
+    <div class="frame-gallery" id="frameGallery">
+      <div class="frame" onclick="pilihFrame('mark.png')">
+        <img src="mark.png" alt="Frame 1">
+        <p>Frame 1</p>
+      </div>
+      <div class="frame" onclick="pilihFrame('haechann.png')">
+        <img src="haechann.png" alt="Frame 2">
+        <p>Frame 2</p>
+      </div>
+      <div class="frame" onclick="pilihFrame('karina.png')">
+        <img src="karina.png" alt="Frame 3">
+        <p>Frame 3</p>
+      </div>
+      <div class="frame" onclick="pilihFrame('windah.png')">
+        <img src="windah.png" alt="Frame 4">
+        <p>Frame 4</p>
+      </div>
+      <div class="frame" onclick="pilihFrame('Ritsuki.png')">
+        <img src="Ritsuki.png" alt="Frame 5">
+        <p>Frame 5</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

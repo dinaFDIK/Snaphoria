@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="stylesheet" href="take_photo.css" />
+  <title>Ambil Foto</title>
+  <style>
+    video {
+      width: 320px;
+      height: auto;
+      transform: scaleX(-1);
+    }
+  
+    .hidden {
+      display: none;
+    }
+
+  #downloadLink {
+  display: inline-block;
+  margin-top: 15px;
+  padding: 12px 24px;
+  font-size: 16px;
+  background-color: #6EC1E4;
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  font-family: 'Comic Sans MS', cursive, sans-serif;
+  transition: background-color 0.3s ease;
+}
+
+#downloadLink:hover {
+  background-color: #4BAED6;
+}
+  </style>  
+</head>
+<body>
+  <h1>Ambil Foto</h1>
+  <video id="video" autoplay></video>
+  <br>
+  <button onclick="ambilFoto()">Ambil Foto</button>
+  <p id="counter">Foto ke-1</p>
+
+  <div id="hasil" class="hidden">
+    <h2>Hasil Akhir</h2>
+    <canvas id="hasilCanvas" width="707" height="2000"></canvas>
+  </div>
+  <a id="downloadLink" href="#" download="snaphoria.png" class="hidden">Download Hasil</a>  
+
+  <script>
+    const video = document.getElementById('video');
+    const hasilCanvas = document.getElementById('hasilCanvas');
+    const ctxHasil = hasilCanvas.getContext('2d');
+    const jumlahFoto = parseInt(localStorage.getItem('jumlahFoto')) || 3;
+    const framePath = localStorage.getItem('selectedFrame');
+    const counter = document.getElementById('counter');
+
+    const fotoList = [];
+    let fotoKe = 1;
+
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then((stream) => {
+        video.srcObject = stream;
+      });
+
+    function ambilFoto() {
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.translate(canvas.width, 0);
+      ctx.scale(-1, 1);
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      fotoList.push(canvas);
+
+      if (fotoKe < jumlahFoto) {
+        fotoKe++;
+        counter.textContent = `Foto ke-${fotoKe}`;
+      } else {
+        gabungkanFoto();
+      }
+    }
+
+    function gabungkanFoto() {
+      video.style.display = 'none';
+      counter.style.display = 'none';
+
+      const frameImage = new Image();
+
+      if (!framePath) {
+        alert("Frame belum dipilih. Silakan kembali dan pilih frame terlebih dahulu.");
+        return;
+      }
+
+      const posisi = {
+        3: [
+          { x: 0, y: 40, w: 707, h: 580 },
+          { x: 0, y: 710, w: 707, h: 580 },
+          { x: 0, y: 1380, w: 707, h: 580 }
+        ],
+        1: [
+          { x: 0, y: 500, w: 707, h: 1000 }
+        ],
+        4: [
+          { x: 60, y: 100, w: 580, h: 400 },
+          { x: 60, y: 550, w: 580, h: 400 },
+          { x: 60, y: 1000, w: 580, h: 400 },
+          { x: 60, y: 1450, w: 580, h: 400 }
+        ]
+      };
+
+      const posisiSlot = posisi[jumlahFoto];
+
+      if (!posisiSlot) {
+        alert("Jumlah foto tidak sesuai posisi yang tersedia.");
+        return;
+      }
+
+      ctxHasil.clearRect(0, 0, hasilCanvas.width, hasilCanvas.height);
+
+      for (let i = 0; i < jumlahFoto; i++) {
+        const p = posisiSlot[i];
+
+        const foto = fotoList[i];
+        const srcX = (foto.width - foto.height * (p.w / p.h)) / 2;
+        const srcY = 0;
+        const srcW = foto.height * (p.w / p.h);
+        const srcH = foto.height;
+
+        ctxHasil.drawImage(foto, srcX, srcY, srcW, srcH, p.x, p.y, p.w, p.h);
+      }
+
+      frameImage.src = framePath;
+      frameImage.onload = () => {
+  // Gambar dulu semua foto
+  for (let i = 0; i < jumlahFoto; i++) {
+    const p = posisiSlot[i];
+    const foto = fotoList[i];
+
+    const srcX = (foto.width - foto.height * (p.w / p.h)) / 2;
+    const srcY = 0;
+    const srcW = foto.height * (p.w / p.h);
+    const srcH = foto.height;
+
+    ctxHasil.drawImage(foto, srcX, srcY, srcW, srcH, p.x, p.y, p.w, p.h);
+  }
+
+  // Baru gambar framenya di atasnya
+  ctxHasil.drawImage(frameImage, 0, 0, hasilCanvas.width, hasilCanvas.height);
+
+  // Update tampilan hasil
+  document.getElementById('hasil').classList.remove('hidden');
+
+  // Atur href untuk download
+  const dataURL = hasilCanvas.toDataURL("image/png");
+  const link = document.getElementById('downloadLink');
+  link.href = dataURL;
+  link.download = "snaphoria.png";
+  link.classList.remove("hidden");
+};
+
+
+
+      frameImage.onerror = () => {
+        alert("Gagal memuat frame. Coba pilih frame lain.");
+      };
+    }
+  </script>
+</body>
+</html>
